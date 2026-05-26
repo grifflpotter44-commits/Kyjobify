@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>KYJobify – Kentucky's Job Board</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,sans-serif;color:#1a2640;background:#0a0f1e;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+
+/* ── INTRO OVERLAY ── */
+#intro{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#0a0f1e;transition:opacity 1s ease,visibility 1s ease}
+#intro.gone{opacity:0;visibility:hidden;pointer-events:none}
+.intro-logo{font-size:3.5rem;font-weight:900;color:#fff;letter-spacing:-1px;opacity:0;transform:scale(.6);transition:opacity .8s ease,transform .8s ease}
+.intro-logo span{color:#3b82f6}
+.intro-logo.show{opacity:1;transform:scale(1)}
+.intro-tag{font-size:1rem;color:#93c5fd;margin-top:.75rem;opacity:0;transform:translateY(12px);transition:opacity .7s .4s ease,transform .7s .4s ease}
+.intro-tag.show{opacity:1;transform:translateY(0)}
+.intro-bar{width:0;height:3px;background:linear-gradient(90deg,#3b82f6,#60a5fa);border-radius:2px;margin-top:2rem;transition:width 1.8s .3s cubic-bezier(.4,0,.2,1)}
+.intro-bar.grow{width:220px}
+
+/* ── PAGE (hidden until intro done) ── */
+#page{opacity:0;transition:opacity 1.2s ease;background:#fff}
+#page.show{opacity:1}
+
+/* ── NAV ── */
+nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2.5rem;border-bottom:1px solid #e2eaf5;position:sticky;top:0;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);z-index:100;transform:translateY(-100%);transition:transform .8s ease}
+nav.drop{transform:translateY(0)}
+.logo{font-size:1.4rem;font-weight:800;color:#1a56db}
+.logo span{color:#1a2640}
+.nav-links{display:flex;gap:1.5rem;align-items:center;font-size:.95rem}
+.nav-links a{color:#374151;transition:color .2s}
+.nav-links a:hover{color:#1a56db}
+.btn-nav{background:#1a56db;color:#fff!important;padding:.45rem 1.1rem;border-radius:8px;font-weight:600}
+.btn-nav:hover{background:#1648c5!important}
+
+/* ── HERO ── */
+.hero{position:relative;text-align:center;padding:6rem 2rem 5rem;background:linear-gradient(160deg,#eff6ff 0%,#fff 65%);overflow:hidden;min-height:560px}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.hero-content{position:relative;z-index:2}
+
+.hero-badge{display:inline-block;background:#dbeafe;color:#1e40af;font-size:.8rem;font-weight:600;padding:.3rem .85rem;border-radius:999px;margin-bottom:1.3rem;letter-spacing:.3px;
+  opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+.hero h1{font-size:3.2rem;font-weight:900;line-height:1.12;color:#111827;max-width:720px;margin:0 auto .8rem;
+  opacity:0;transform:translateY(40px);transition:opacity .8s .1s ease,transform .8s .1s ease}
+.hero h1 span{color:#1a56db}
+.hero p{font-size:1.15rem;color:#4b5563;max-width:520px;margin:0 auto 2.2rem;line-height:1.7;
+  opacity:0;transform:translateY(40px);transition:opacity .8s .25s ease,transform .8s .25s ease}
+.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;
+  opacity:0;transform:translateY(40px);transition:opacity .8s .4s ease,transform .8s .4s ease}
+
+.hero-badge.up,.hero h1.up,.hero p.up,.hero-btns.up{opacity:1;transform:translateY(0)}
+
+.btn-primary{background:#1a56db;color:#fff;padding:.8rem 2rem;border-radius:9px;font-weight:700;font-size:1rem;border:none;cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;box-shadow:0 4px 20px rgba(26,86,219,.35)}
+.btn-primary:hover{background:#1648c5;transform:translateY(-3px);box-shadow:0 10px 30px rgba(26,86,219,.45)}
+.btn-outline{background:#fff;color:#1a56db;padding:.8rem 2rem;border-radius:9px;font-weight:700;font-size:1rem;border:2px solid #1a56db;cursor:pointer;transition:all .2s}
+.btn-outline:hover{background:#eff6ff;transform:translateY(-3px)}
+
+/* ── FLOATING PILLS ── */
+.pills-wrap{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1}
+.pill{position:absolute;background:#fff;border:1px solid #e2eaf5;border-radius:999px;padding:.4rem 1rem;font-size:.78rem;font-weight:600;color:#374151;white-space:nowrap;box-shadow:0 2px 12px rgba(0,0,0,.07);opacity:0;animation:floatUp linear infinite}
+@keyframes floatUp{0%{opacity:0;transform:translateY(60px)}10%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translateY(-140px)}}
+
+/* ── TICKER ── */
+.ticker{background:#1a56db;color:#fff;padding:.6rem 0;overflow:hidden;white-space:nowrap;
+  opacity:0;transform:scaleX(.8);transition:opacity .8s ease,transform .8s ease}
+.ticker.up{opacity:1;transform:scaleX(1)}
+.ticker-inner{display:inline-flex;animation:tickMove 30s linear infinite}
+.ticker-item{padding:0 2.5rem;font-size:.85rem;font-weight:500;opacity:.92}
+.ticker-item span{opacity:.4;margin-right:2.5rem}
+@keyframes tickMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── STATS ── */
+.stats{display:flex;justify-content:center;gap:3rem;padding:2.5rem;background:#1a56db;color:#fff;flex-wrap:wrap;
+  opacity:0;transition:opacity 1s ease}
+.stats.up{opacity:1}
+.stat{text-align:center}
+.stat-num{font-size:1.9rem;font-weight:800}
+.stat-label{font-size:.8rem;opacity:.8;margin-top:.15rem}
+
+/* ── SECTIONS ── */
+section{padding:4.5rem 2rem}
+.section-label{font-size:.78rem;font-weight:700;letter-spacing:1px;color:#1a56db;text-transform:uppercase;text-align:center;margin-bottom:.5rem}
+.section-title{font-size:2rem;font-weight:800;text-align:center;margin-bottom:.6rem;color:#111827}
+.section-sub{text-align:center;color:#6b7280;font-size:1rem;max-width:500px;margin:0 auto 3rem}
+
+/* ── STEPS ── */
+.steps{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;max-width:900px;margin:0 auto}
+.step{flex:1;min-width:220px;max-width:260px;text-align:center;padding:2rem 1.5rem;border:1px solid #e5e7eb;border-radius:14px;
+  opacity:0;transform:translateY(40px);transition:opacity .7s ease,transform .7s ease,box-shadow .3s,border-color .3s}
+.step.up{opacity:1;transform:translateY(0)}
+.step:hover{transform:translateY(-6px)!important;box-shadow:0 12px 32px rgba(26,86,219,.12);border-color:#bfdbfe}
+.step-num{width:44px;height:44px;background:#dbeafe;color:#1a56db;font-weight:800;font-size:1.1rem;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+.step h3{font-size:1.05rem;font-weight:700;margin-bottom:.5rem;color:#111827}
+.step p{font-size:.9rem;color:#6b7280;line-height:1.6}
+
+/* ── FEATURES ── */
+.features-bg{background:#f8faff}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;max-width:960px;margin:0 auto}
+.feat-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:1.5rem;
+  opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease,box-shadow .3s,border-color .3s}
+.feat-card.up{opacity:1;transform:translateY(0)}
+.feat-card:hover{transform:translateY(-5px)!important;box-shadow:0 10px 28px rgba(26,86,219,.1);border-color:#bfdbfe}
+.feat-icon{width:44px;height:44px;background:#dbeafe;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;font-size:1.3rem}
+.feat-card h3{font-size:1rem;font-weight:700;color:#111827;margin-bottom:.4rem}
+.feat-card p{font-size:.9rem;color:#6b7280;line-height:1.6}
+
+/* ── PRICING ── */
+.pricing-card{max-width:380px;margin:0 auto;background:#fff;border:2px solid #1a56db;border-radius:18px;padding:2.5rem;text-align:center;
+  opacity:0;transform:translateY(40px) scale(.97);transition:opacity .8s ease,transform .8s ease,box-shadow .3s}
+.pricing-card.up{opacity:1;transform:translateY(0) scale(1)}
+.pricing-card:hover{transform:scale(1.03)!important;box-shadow:0 16px 40px rgba(26,86,219,.18)}
+.price-tag{font-size:3.5rem;font-weight:800;color:#1a56db;line-height:1}
+.price-tag sup{font-size:1.5rem;vertical-align:super}
+.price-sub{color:#6b7280;margin:.5rem 0 1.5rem;font-size:.95rem}
+.price-features{list-style:none;margin-bottom:2rem;text-align:left}
+.price-features li{padding:.5rem 0;border-bottom:1px solid #f0f4ff;font-size:.95rem;color:#374151;display:flex;align-items:center;gap:.6rem}
+.check{color:#1a56db;font-weight:700;font-size:1.1rem}
+
+/* ── LISTINGS ── */
+.listings-bg{background:#f8faff}
+.listings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;max-width:960px;margin:0 auto 2rem}
+.job-card{background:#fff;border:1px solid #e5e7eb;border-radius:13px;padding:1.25rem 1.5rem;
+  opacity:0;transform:translateY(25px);transition:opacity .6s ease,transform .6s ease,box-shadow .2s,border-color .2s}
+.job-card.up{opacity:1;transform:translateY(0)}
+.job-card:hover{border-color:#1a56db;box-shadow:0 4px 18px rgba(26,86,219,.1);transform:translateY(-4px)!important}
+.job-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.6rem}
+.job-title{font-size:1.05rem;font-weight:700;color:#111827}
+.job-badge{background:#dbeafe;color:#1e40af;font-size:.73rem;font-weight:600;padding:.2rem .6rem;border-radius:999px}
+.job-company{font-size:.88rem;color:#1a56db;font-weight:600;margin-bottom:.4rem}
+.job-meta{display:flex;gap:.75rem;font-size:.82rem;color:#9ca3af;flex-wrap:wrap}
+.view-all{display:flex;justify-content:center}
+.btn-view{background:#fff;color:#1a56db;border:2px solid #1a56db;padding:.7rem 2rem;border-radius:9px;font-weight:700;font-size:.95rem;cursor:pointer;transition:all .2s}
+.btn-view:hover{background:#eff6ff;transform:translateY(-2px)}
+
+/* ── FOOTER ── */
+footer{background:#111827;color:#9ca3af;padding:2.5rem;text-align:center}
+footer .footer-logo{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:.5rem}
+footer .footer-logo span{color:#60a5fa}
+footer p{font-size:.88rem;margin-bottom:1rem}
+.footer-links{display:flex;justify-content:center;gap:1.5rem;font-size:.88rem;flex-wrap:wrap}
+.footer-links a{color:#9ca3af;transition:color .2s}
+.footer-links a:hover{color:#fff}
+</style>
+</head>
+<body>
+
+<!-- INTRO SCREEN -->
+<div id="intro">
+  <div class="intro-logo" id="iLogo">KY<span>Jobify</span></div>
+  <div class="intro-tag" id="iTag">Kentucky's Local Job Board</div>
+  <div class="intro-bar" id="iBar"></div>
+</div>
+
+<!-- MAIN PAGE -->
+<div id="page">
+  <nav id="nav">
+    <div class="logo">KY<span>Jobify</span></div>
+    <div class="nav-links">
+      <a href="#">How it works</a>
+      <a href="#">Features</a>
+      <a href="#">Pricing</a>
+      <a href="#" class="btn-nav">Browse Jobs</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <canvas id="hero-canvas"></canvas>
+    <div class="pills-wrap" id="pills"></div>
+    <div class="hero-content">
+      <div class="hero-badge" id="hBadge">🇺🇸 Kentucky's #1 Local Job Board</div>
+      <h1 id="hTitle">Post a Job in Kentucky<br>for just <span>$2</span></h1>
+      <p id="hSub">Connect with local talent across the Bluegrass State. Post listings, chat privately with candidates, and hire fast — all for $2.</p>
+      <div class="hero-btns" id="hBtns">
+        <button class="btn-primary">Post a Job — $2</button>
+        <button class="btn-outline">Browse Listings →</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="ticker" id="ticker">
+    <div class="ticker-inner" id="tickerInner"></div>
+  </div>
+
+  <div class="stats" id="statsBar">
+    <div class="stat"><div class="stat-num">$2</div><div class="stat-label">Flat listing fee</div></div>
+    <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Kentucky focused</div></div>
+    <div class="stat"><div class="stat-num">🔒</div><div class="stat-label">Private messaging</div></div>
+    <div class="stat"><div class="stat-num">⚡</div><div class="stat-label">Post in minutes</div></div>
+  </div>
+
+  <section>
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">Hire in 3 simple steps</h2>
+    <p class="section-sub">No complicated setup. Just post, connect, and hire.</p>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><h3>Post your listing</h3><p>Fill out a simple form with your job details and pay the flat $2 fee to go live instantly.</p></div>
+      <div class="step"><div class="step-num">2</div><h3>Connect privately</h3><p>Candidates message you directly through secure in-site chat — no email spam.</p></div>
+      <div class="step"><div class="step-num">3</div><h3>Hire the right person</h3><p>Review applicants, chat in real time, and make your hire — all in one place.</p></div>
+    </div>
+  </section>
+
+  <section class="features-bg">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Everything you need to hire locally</h2>
+    <p class="section-sub">Built specifically for Kentucky employers and job seekers.</p>
+    <div class="features-grid">
+      <div class="feat-card"><div class="feat-icon">💼</div><h3>$2 flat-fee listings</h3><p>No subscriptions, no hidden fees. Pay once, get your listing in front of local job seekers.</p></div>
+      <div class="feat-card"><div class="feat-icon">💬</div><h3>Private in-site chat</h3><p>Message candidates securely without sharing your personal email or phone number.</p></div>
+      <div class="feat-card"><div class="feat-icon">📍</div><h3>Kentucky-focused</h3><p>Every listing is local. Find candidates who actually live and work in your community.</p></div>
+      <div class="feat-card"><div class="feat-icon">⚡</div><h3>Post in minutes</h3><p>Simple listing form gets your job live fast — no approval delays or lengthy setup.</p></div>
+      <div class="feat-card"><div class="feat-icon">🔍</div><h3>Easy job browsing</h3><p>Search and filter listings by location, category, and job type with ease.</p></div>
+      <div class="feat-card"><div class="feat-icon">🤝</div><h3>Support local hiring</h3><p>Built for small businesses who want to keep hiring local and affordable.</p></div>
+    </div>
+  </section>
+
+  <section id="pricing">
+    <div class="section-label">Pricing</div>
+    <h2 class="section-title">Simple, honest pricing</h2>
+    <p class="section-sub">No tiers. No monthly fees. Just $2 per listing.</p>
+    <div class="pricing-card">
+      <div class="price-tag"><sup>$</sup>2</div>
+      <p class="price-sub">per job listing</p>
+      <ul class="price-features">
+        <li><span class="check">✓</span> Listing goes live instantly</li>
+        <li><span class="check">✓</span> Unlimited candidate applications</li>
+        <li><span class="check">✓</span> Private in-site messaging</li>
+        <li><span class="check">✓</span> Listed until filled or removed</li>
+        <li><span class="check">✓</span> Visible to all Kentucky job seekers</li>
+      </ul>
+      <button class="btn-primary" style="width:100%;padding:.85rem;font-size:1.05rem">Post a Job for $2</button>
+    </div>
+  </section>
+
+  <section class="listings-bg">
+    <div class="section-label">Browse listings</div>
+    <h2 class="section-title">Latest job listings</h2>
+    <p class="section-sub">A sample of what's live on KYJobify right now.</p>
+    <div class="listings-grid">
+      <div class="job-card"><div class="job-top"><span class="job-title">Warehouse Associate</span><span class="job-badge">Full-time</span></div><div class="job-company">Bluegrass Logistics Co.</div><div class="job-meta"><span>📍 Louisville, KY</span><span>💵 $17–$20/hr</span></div></div>
+      <div class="job-card"><div class="job-top"><span class="job-title">Registered Nurse</span><span class="job-badge">Full-time</span></div><div class="job-company">Central Kentucky Medical</div><div class="job-meta"><span>📍 Lexington, KY</span><span>💵 $32–$40/hr</span></div></div>
+      <div class="job-card"><div class="job-top"><span class="job-title">Restaurant Manager</span><span class="job-badge">Full-time</span></div><div class="job-company">Frankfort Eats LLC</div><div class="job-meta"><span>📍 Frankfort, KY</span><span>💵 $45K–$55K/yr</span></div></div>
+      <div class="job-card"><div class="job-top"><span class="job-title">Delivery Driver</span><span class="job-badge">Part-time</span></div><div class="job-company">QuickRun Courier</div><div class="job-meta"><span>📍 Bowling Green, KY</span><span>💵 $15/hr + tips</span></div></div>
+      <div class="job-card"><div class="job-top"><span class="job-title">Childcare Worker</span><span class="job-badge">Part-time</span></div><div class="job-company">Sunshine Kids Center</div><div class="job-meta"><span>📍 Richmond, KY</span><span>💵 $13–$16/hr</span></div></div>
+      <div class="job-card"><div class="job-top"><span class="job-title">Web Developer</span><span class="job-badge">Remote</span></div><div class="job-company">KY Digital Agency</div><div class="job-meta"><span>📍 Remote (KY)</span><span>💵 $55K–$80K/yr</span></div></div>
+    </div>
+    <div class="view-all"><button class="btn-view">View all listings →</button></div>
+  </section>
+
+  <footer>
+    <div class="footer-logo">KY<span>Jobify</span></div>
+    <p>Kentucky's affordable local job board. Post for $2. Hire fast.</p>
+    <div class="footer-links">
+      <a href="#">Browse Jobs</a><a href="#">Post a Job</a>
+      <a href="#">How it Works</a><a href="#">Contact</a><a href="#">Privacy Policy</a>
+    </div>
+    <p style="margin-top:1.5rem;font-size:.8rem;opacity:.5">© 2026 KYJobify. All rights reserved.</p>
+  </footer>
+</div>
+
+<script>
+// ── INTRO SEQUENCE ──────────────────────────────────────────
+window.addEventListener('load', function(){
+  var logo=document.getElementById('iLogo');
+  var tag=document.getElementById('iTag');
+  var bar=document.getElementById('iBar');
+  var intro=document.getElementById('intro');
+  var page=document.getElementById('page');
+  var nav=document.getElementById('nav');
+
+  // Step 1: logo pops in
+  setTimeout(function(){logo.classList.add('show');},200);
+  // Step 2: tagline slides up
+  setTimeout(function(){tag.classList.add('show');},600);
+  // Step 3: loading bar grows
+  setTimeout(function(){bar.classList.add('grow');},700);
+  // Step 4: intro fades out, page fades in
+  setTimeout(function(){
+    intro.classList.add('gone');
+    page.classList.add('show');
+    // Step 5: nav drops down
+    setTimeout(function(){nav.classList.add('drop');},200);
+    // Step 6: hero elements cascade up
+    setTimeout(function(){document.getElementById('hBadge').classList.add('up');},400);
+    setTimeout(function(){document.getElementById('hTitle').classList.add('up');},580);
+    setTimeout(function(){document.getElementById('hSub').classList.add('up');},740);
+    setTimeout(function(){document.getElementById('hBtns').classList.add('up');},880);
+    // Step 7: ticker + stats slide in
+    setTimeout(function(){document.getElementById('ticker').classList.add('up');},1050);
+    setTimeout(function(){document.getElementById('statsBar').classList.add('up');},1200);
+    // Step 8: start pills
+    setTimeout(startPills,1000);
+  },2800);
+});
+
+// ── CANVAS PARTICLES ───────────────────────────────────────
+var canvas=document.getElementById('hero-canvas');
+var ctx=canvas.getContext('2d');
+var pts=[];
+var W,H;
+function resize(){W=canvas.width=canvas.offsetWidth;H=canvas.height=canvas.offsetHeight;}
+resize();
+window.addEventListener('resize',function(){resize();initPts();});
+function initPts(){
+  pts=[];
+  var n=Math.floor(W*H/7000);
+  for(var i=0;i<n;i++) pts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.5,vy:(Math.random()-.5)*.5,r:Math.random()*2+1.5});
+}
+initPts();
+var mouse={x:-999,y:-999};
+document.addEventListener('mousemove',function(e){mouse.x=e.clientX;mouse.y=e.clientY;});
+(function draw(){
+  ctx.clearRect(0,0,W,H);
+  pts.forEach(function(p){
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0||p.x>W)p.vx*=-1;
+    if(p.y<0||p.y>H)p.vy*=-1;
+    var dx=mouse.x-p.x,dy=mouse.y-p.y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<100){p.x-=dx*.025;p.y-=dy*.025;}
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(26,86,219,.15)';ctx.fill();
+  });
+  for(var i=0;i<pts.length;i++) for(var j=i+1;j<pts.length;j++){
+    var dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<100){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle='rgba(26,86,219,'+(1-d/100)*.1+')';ctx.lineWidth=1;ctx.stroke();}
+  }
+  requestAnimationFrame(draw);
+})();
+
+// ── FLOATING PILLS ─────────────────────────────────────────
+var pillLabels=['💼 Nurse · Lexington','🔧 HVAC · Louisville','🚗 CDL Driver · Frankfort','💻 Web Dev · Remote','📦 Warehouse · Bowling Green','🍽️ Chef · Lexington','📚 Teacher · Richmond','⚡ Electrician · KY','🏥 CNA · Louisville','🛒 Cashier · Frankfort'];
+function startPills(){
+  var wrap=document.getElementById('pills');
+  function spawn(){
+    var el=document.createElement('div');el.className='pill';
+    el.textContent=pillLabels[Math.floor(Math.random()*pillLabels.length)];
+    var dur=7+Math.random()*5;
+    el.style.cssText='left:'+Math.random()*88+'%;bottom:-40px;animation-duration:'+dur+'s;animation-delay:'+Math.random()+'s';
+    wrap.appendChild(el);
+    setTimeout(function(){el.remove();},(dur+1.5)*1000);
+  }
+  for(var i=0;i<4;i++) setTimeout(spawn,i*500);
+  setInterval(spawn,1400);
+}
+
+// ── TICKER ─────────────────────────────────────────────────
+var jobs=['💼 Warehouse · Louisville','🏥 Registered Nurse · Lexington','🚗 Delivery Driver · Bowling Green','💻 Web Developer · Remote','🔧 HVAC Tech · Louisville','📚 Teacher · Richmond','⚡ Electrician · Bowling Green','🍽️ Manager · Frankfort','🛒 Cashier · Frankfort','🚛 CDL Driver · Louisville'];
+var ti=document.getElementById('tickerInner');
+var html='';
+for(var r=0;r<2;r++) jobs.forEach(function(j){html+='<span class="ticker-item">'+j+'<span> ● </span></span>';});
+ti.innerHTML=html;
+
+// ── SCROLL REVEAL ──────────────────────────────────────────
+var revEls=document.querySelectorAll('.step,.feat-card,.pricing-card,.job-card');
+var delays=[0,.1,.2,.3,.4,.5];
+revEls.forEach(function(el,i){
+  var group=el.parentElement;
+  var idx=Array.from(group.children).indexOf(el);
+  el.style.transitionDelay=(delays[idx]||0)+'s';
+});
+var io=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('up');});
+},{threshold:.12});
+revEls.forEach(function(el){io.observe(el);});
+</script>
+</body>
+</html>
