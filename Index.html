@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>KYJobify – Browse Jobs</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f3f6fb;color:#1a2640}
+nav{background:#fff;border-bottom:1px solid #e2eaf5;padding:.9rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:1.3rem;font-weight:800;color:#1a56db}.logo span{color:#111}
+.nav-right{display:flex;gap:1rem;align-items:center;font-size:.9rem}
+.nav-right a{color:#374151;cursor:pointer}
+.btn-post{background:#1a56db;color:#fff;padding:.4rem 1rem;border-radius:7px;font-weight:600;border:none;cursor:pointer;font-size:.9rem}
+.btn-post:hover{background:#1648c5}
+.page-hdr{background:#fff;border-bottom:1px solid #e2eaf5;padding:1.5rem 2rem}
+.page-hdr h1{font-size:1.6rem;font-weight:800;color:#111;margin-bottom:.2rem}
+.page-hdr p{color:#6b7280;font-size:.9rem}
+.search-row{background:#fff;border-bottom:1px solid #e2eaf5;padding:.9rem 2rem;display:flex;gap:.6rem;flex-wrap:wrap}
+.s-input{flex:1;min-width:160px;padding:.5rem .9rem;border:1px solid #d1d5db;border-radius:7px;font-size:.88rem;outline:none}
+.s-input:focus{border-color:#1a56db}
+.s-sel{padding:.5rem .8rem;border:1px solid #d1d5db;border-radius:7px;font-size:.88rem;background:#fff;outline:none}
+.s-btn{background:#1a56db;color:#fff;padding:.5rem 1.2rem;border-radius:7px;font-weight:600;font-size:.88rem;border:none;cursor:pointer}
+.layout{display:flex;gap:1.25rem;padding:1.25rem 2rem;max-width:1180px;margin:0 auto}
+.sidebar{width:230px;flex-shrink:0;display:flex;flex-direction:column;gap:.9rem}
+.fbox{background:#fff;border:1px solid #e5e7eb;border-radius:11px;padding:1.1rem}
+.fbox h3{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#374151;margin-bottom:.8rem}
+.fitem{display:flex;align-items:center;gap:.5rem;font-size:.87rem;color:#374151;padding:.25rem 0;cursor:pointer}
+.fitem input{accent-color:#1a56db}
+.cta-box{background:#1a56db;border-radius:11px;padding:1.3rem;text-align:center;color:#fff}
+.cta-box h3{font-size:.95rem;font-weight:700;margin-bottom:.35rem}
+.cta-box p{font-size:.82rem;opacity:.85;margin-bottom:.9rem;line-height:1.5}
+.btn-white{background:#fff;color:#1a56db;border:none;padding:.5rem 1.1rem;border-radius:7px;font-weight:700;font-size:.85rem;cursor:pointer}
+.main{flex:1;min-width:0}
+.results-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem}
+.results-hdr span{font-size:.88rem;color:#6b7280}
+.jobs{display:flex;flex-direction:column;gap:.75rem}
+
+/* Slot card */
+.slot-card{background:#fff;border:2px dashed #bfdbfe;border-radius:12px;padding:1.6rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer;transition:border-color .2s,background .2s}
+.slot-card:hover{border-color:#1a56db;background:#eff6ff}
+.slot-left{display:flex;align-items:center;gap:1rem}
+.slot-icon{width:46px;height:46px;border-radius:9px;background:#dbeafe;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.slot-icon svg{width:22px;height:22px;stroke:#1a56db;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.slot-text h3{font-size:.98rem;font-weight:700;color:#1a56db;margin-bottom:.2rem}
+.slot-text p{font-size:.83rem;color:#6b7280}
+.slot-btn{background:#1a56db;color:#fff;padding:.45rem 1.1rem;border-radius:7px;font-size:.83rem;font-weight:600;border:none;cursor:pointer;white-space:nowrap}
+
+/* Live job card */
+.jcard{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:1.2rem 1.4rem;transition:border-color .18s,box-shadow .18s}
+.jcard:hover{border-color:#1a56db;box-shadow:0 3px 16px rgba(26,86,219,.09)}
+.jcard-top{display:flex;gap:1rem;align-items:flex-start}
+.avatar{width:46px;height:46px;border-radius:9px;background:#dbeafe;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem;color:#1a56db;flex-shrink:0}
+.jbody{flex:1;min-width:0}
+.jtop{display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;margin-bottom:.25rem;flex-wrap:wrap}
+.jtitle{font-size:1rem;font-weight:700;color:#111}
+.jdate{font-size:.78rem;color:#9ca3af}
+.badge{font-size:.7rem;font-weight:600;padding:.18rem .55rem;border-radius:999px;display:inline-block;margin-bottom:.35rem}
+.b-ft{background:#dbeafe;color:#1e40af}
+.b-pt{background:#fef3c7;color:#92400e}
+.b-rm{background:#d1fae5;color:#065f46}
+.b-ct{background:#ede9fe;color:#5b21b6}
+.jco{font-size:.87rem;color:#1a56db;font-weight:600;margin-bottom:.35rem}
+.jmeta{display:flex;gap:.85rem;font-size:.8rem;color:#9ca3af;flex-wrap:wrap;margin-bottom:.45rem}
+.jdesc{font-size:.85rem;color:#6b7280;line-height:1.55}
+.jfoot{display:flex;align-items:center;justify-content:flex-end;margin-top:.85rem;gap:.6rem;flex-wrap:wrap;border-top:1px solid #f0f4ff;padding-top:.85rem}
+.btn-chat{background:#fff;color:#1a56db;border:1.5px solid #1a56db;padding:.42rem 1rem;border-radius:7px;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.35rem;transition:background .2s}
+.btn-chat:hover{background:#eff6ff}
+.btn-apply{background:#1a56db;color:#fff;padding:.42rem 1rem;border-radius:7px;font-size:.82rem;font-weight:600;border:none;cursor:pointer}
+.btn-apply:hover{background:#1648c5}
+
+/* Post modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:14px;padding:2rem;width:100%;max-width:500px;margin:1rem;position:relative;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:1.2rem;font-weight:800;color:#111;margin-bottom:.25rem}
+.modal .sub{font-size:.84rem;color:#6b7280;margin-bottom:1.2rem}
+.close-btn{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6b7280}
+.form-group{margin-bottom:.9rem}
+.form-group label{display:block;font-size:.82rem;font-weight:600;color:#374151;margin-bottom:.3rem}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:.52rem .85rem;border:1px solid #d1d5db;border-radius:7px;font-size:.88rem;outline:none;font-family:inherit;color:#111;background:#fff}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#1a56db}
+.form-group textarea{resize:vertical;min-height:85px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.price-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:.7rem 1rem;font-size:.84rem;color:#1e40af;margin-bottom:1rem}
+.submit-btn{width:100%;background:#1a56db;color:#fff;padding:.7rem;border-radius:8px;font-weight:700;font-size:.93rem;border:none;cursor:pointer;margin-top:.4rem}
+.submit-btn:hover{background:#1648c5}
+
+/* Chat modal */
+.chat-modal{background:#fff;border-radius:14px;width:100%;max-width:420px;margin:1rem;display:flex;flex-direction:column;overflow:hidden;max-height:88vh}
+.chat-header{background:#1a56db;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;color:#fff;flex-shrink:0}
+.chat-header-left{display:flex;align-items:center;gap:.75rem}
+.chat-av{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff}
+.chat-name{font-weight:700;font-size:.95rem}
+.chat-sub{font-size:.75rem;opacity:.8}
+.chat-close{background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;opacity:.8}
+.chat-msgs{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.65rem;min-height:280px;background:#f8faff}
+.msg{max-width:78%;padding:.55rem .85rem;border-radius:10px;font-size:.87rem;line-height:1.5;word-break:break-word}
+.msg.them{background:#fff;border:1px solid #e5e7eb;color:#111;align-self:flex-start;border-bottom-left-radius:3px}
+.msg.me{background:#1a56db;color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.msg-time{font-size:.7rem;opacity:.6;margin-top:.25rem}
+.chat-input-row{display:flex;gap:.5rem;padding:.85rem 1rem;border-top:1px solid #e5e7eb;background:#fff;flex-shrink:0}
+.chat-input{flex:1;padding:.5rem .85rem;border:1px solid #d1d5db;border-radius:20px;font-size:.88rem;outline:none;font-family:inherit}
+.chat-input:focus{border-color:#1a56db}
+.send-btn{background:#1a56db;color:#fff;border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.send-btn svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+footer{background:#111827;color:#9ca3af;text-align:center;padding:1.75rem 2rem;margin-top:2rem}
+.fl{font-size:1.15rem;font-weight:800;color:#fff;margin-bottom:.35rem}
+.fl span{color:#60a5fa}
+footer p{font-size:.82rem;margin-bottom:.6rem}
+.flinks{display:flex;justify-content:center;gap:1.2rem;font-size:.82rem;flex-wrap:wrap}
+.flinks a{color:#9ca3af;cursor:pointer}
+.flinks a:hover{color:#fff}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">KY<span>Jobify</span></div>
+  <div class="nav-right">
+    <a href="#">Home</a>
+    <a href="#">Browse Jobs</a>
+    <button class="btn-post" onclick="openPost()">Post a Job — $2</button>
+  </div>
+</nav>
+
+<div class="page-hdr">
+  <h1>Browse Jobs in Kentucky</h1>
+  <p>Find your next opportunity — updated daily across the Bluegrass State.</p>
+</div>
+
+<div class="search-row">
+  <input class="s-input" type="text" placeholder="Job title, keyword..."/>
+  <select class="s-sel">
+    <option value="">All Locations</option>
+    <option>Louisville, KY</option><option>Lexington, KY</option>
+    <option>Richmond, KY</option><option>Bowling Green, KY</option>
+    <option>Frankfort, KY</option><option>Remote (KY)</option>
+  </select>
+  <select class="s-sel">
+    <option value="">All Types</option>
+    <option>Full-time</option><option>Part-time</option>
+    <option>Remote</option><option>Contract</option>
+  </select>
+  <button class="s-btn">Search</button>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="fbox">
+      <h3>Job Type</h3>
+      <label class="fitem"><input type="checkbox"> Full-time</label>
+      <label class="fitem"><input type="checkbox"> Part-time</label>
+      <label class="fitem"><input type="checkbox"> Remote</label>
+      <label class="fitem"><input type="checkbox"> Contract</label>
+    </div>
+    <div class="fbox">
+      <h3>Category</h3>
+      <label class="fitem"><input type="checkbox"> Healthcare</label>
+      <label class="fitem"><input type="checkbox"> Trades &amp; Labor</label>
+      <label class="fitem"><input type="checkbox"> Technology</label>
+      <label class="fitem"><input type="checkbox"> Retail &amp; Food</label>
+      <label class="fitem"><input type="checkbox"> Education</label>
+      <label class="fitem"><input type="checkbox"> Transportation</label>
+    </div>
+    <div class="fbox">
+      <h3>Salary</h3>
+      <label class="fitem"><input type="checkbox"> Under $15/hr</label>
+      <label class="fitem"><input type="checkbox"> $15–$25/hr</label>
+      <label class="fitem"><input type="checkbox"> $25–$40/hr</label>
+      <label class="fitem"><input type="checkbox"> $40K–$60K/yr</label>
+      <label class="fitem"><input type="checkbox"> $60K+/yr</label>
+    </div>
+    <div class="cta-box">
+      <h3>Hiring in Kentucky?</h3>
+      <p>Post your listing and reach local talent for just $2.</p>
+      <button class="btn-white" onclick="openPost()">Post a Job — $2</button>
+    </div>
+  </aside>
+
+  <main>
+    <div class="results-hdr">
+      <span>Listings available — <strong>be the first to post!</strong></span>
+    </div>
+    <div class="jobs" id="jobs">
+      <div class="slot-card" onclick="openPost()">
+        <div class="slot-left">
+          <div class="slot-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>
+          <div class="slot-text"><h3>Listing Available</h3><p>Click to post your job here for just $2</p></div>
+        </div>
+        <button class="slot-btn" onclick="openPost()">Post Now — $2</button>
+      </div>
+      <div class="slot-card" onclick="openPost()">
+        <div class="slot-left">
+          <div class="slot-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>
+          <div class="slot-text"><h3>Listing Available</h3><p>Click to post your job here for just $2</p></div>
+        </div>
+        <button class="slot-btn" onclick="openPost()">Post Now — $2</button>
+      </div>
+      <div class="slot-card" onclick="openPost()">
+        <div class="slot-left">
+          <div class="slot-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>
+          <div class="slot-text"><h3>Listing Available</h3><p>Click to post your job here for just $2</p></div>
+        </div>
+        <button class="slot-btn" onclick="openPost()">Post Now — $2</button>
+      </div>
+      <div class="slot-card" onclick="openPost()">
+        <div class="slot-left">
+          <div class="slot-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>
+          <div class="slot-text"><h3>Listing Available</h3><p>Click to post your job here for just $2</p></div>
+        </div>
+        <button class="slot-btn" onclick="openPost()">Post Now — $2</button>
+      </div>
+      <div class="slot-card" onclick="openPost()">
+        <div class="slot-left">
+          <div class="slot-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></div>
+          <div class="slot-text"><h3>Listing Available</h3><p>Click to post your job here for just $2</p></div>
+        </div>
+        <button class="slot-btn" onclick="openPost()">Post Now — $2</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- POST MODAL -->
+<div class="overlay" id="postOverlay" onclick="bgClose(event,'postOverlay')">
+  <div class="modal">
+    <button class="close-btn" onclick="closePost()">✕</button>
+    <h2>Post a Job Listing</h2>
+    <p class="sub">Fill out the details below. Your listing goes live instantly.</p>
+    <div class="price-note">💳 Flat fee of <strong style="margin:0 .25rem">$2</strong> — no subscriptions, no hidden charges.</div>
+    <div class="form-group"><label>Job Title *</label><input type="text" id="f-title" placeholder="e.g. Warehouse Associate, RN, Web Developer"/></div>
+    <div class="form-group"><label>Company / Your Name *</label><input type="text" id="f-company" placeholder="e.g. Bluegrass Logistics or Jane Smith"/></div>
+    <div class="form-row">
+      <div class="form-group"><label>Location *</label>
+        <select id="f-loc"><option value="">Select city...</option><option>Louisville, KY</option><option>Lexington, KY</option><option>Richmond, KY</option><option>Bowling Green, KY</option><option>Frankfort, KY</option><option>Remote (KY)</option><option>Other KY City</option></select>
+      </div>
+      <div class="form-group"><label>Job Type *</label>
+        <select id="f-type"><option value="">Select type...</option><option>Full-time</option><option>Part-time</option><option>Remote</option><option>Contract</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Salary / Pay</label><input type="text" id="f-pay" placeholder="e.g. $18/hr or $45K/yr"/></div>
+      <div class="form-group"><label>Category</label>
+        <select id="f-cat"><option value="">Select...</option><option>Healthcare</option><option>Trades &amp; Labor</option><option>Technology</option><option>Retail &amp; Food</option><option>Education</option><option>Transportation</option><option>Other</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label>Job Description *</label><textarea id="f-desc" placeholder="Describe the role, responsibilities, and any requirements..."></textarea></div>
+    <div class="form-group"><label>Contact Email *</label><input type="email" id="f-email" placeholder="you@email.com"/></div>
+    <button class="submit-btn" onclick="submitListing()">Post Listing — Pay $2</button>
+  </div>
+</div>
+
+<!-- CHAT MODAL -->
+<div class="overlay" id="chatOverlay" onclick="bgClose(event,'chatOverlay')">
+  <div class="chat-modal">
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <div class="chat-av" id="chat-av">??</div>
+        <div>
+          <div class="chat-name" id="chat-name">Lister</div>
+          <div class="chat-sub" id="chat-job">Job Title</div>
+        </div>
+      </div>
+      <button class="chat-close" onclick="closeChat()">✕</button>
+    </div>
+    <div class="chat-msgs" id="chat-msgs">
+      <div class="msg them">
+        Hi there! Thanks for your interest in my listing. Feel free to ask any questions.
+        <div class="msg-time">Just now</div>
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" type="text" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendMsg()"/>
+      <button class="send-btn" onclick="sendMsg()">
+        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="fl">KY<span>Jobify</span></div>
+  <p>Kentucky's affordable local job board. Post for $2. Hire fast.</p>
+  <div class="flinks">
+    <a href="#">Home</a><a href="#">Browse Jobs</a>
+    <a href="#">Post a Job</a><a href="#">Contact</a><a href="#">Privacy Policy</a>
+  </div>
+  <p style="margin-top:1rem;font-size:.75rem;opacity:.4">© 2026 KYJobify · kyjobify.com/listings</p>
+</footer>
+
+<script>
+function openPost(){document.getElementById('postOverlay').classList.add('open')}
+function closePost(){document.getElementById('postOverlay').classList.remove('open')}
+function bgClose(e,id){if(e.target.id===id)document.getElementById(id).classList.remove('open')}
+
+function submitListing(){
+  var title=document.getElementById('f-title').value.trim();
+  var company=document.getElementById('f-company').value.trim();
+  var loc=document.getElementById('f-loc').value;
+  var type=document.getElementById('f-type').value;
+  var pay=document.getElementById('f-pay').value.trim();
+  var desc=document.getElementById('f-desc').value.trim();
+  var email=document.getElementById('f-email').value.trim();
+  if(!title||!company||!loc||!type||!desc||!email){alert('Please fill in all required fields.');return;}
+  var bc=type==='Full-time'?'b-ft':type==='Part-time'?'b-pt':type==='Remote'?'b-rm':'b-ct';
+  var initials=company.split(' ').map(function(w){return w[0]||''}).join('').slice(0,2).toUpperCase();
+  var card=document.createElement('div');
+  card.className='jcard';
+  card.dataset.company=company;
+  card.dataset.title=title;
+  card.dataset.initials=initials;
+  card.innerHTML=
+    '<div class="jcard-top">'+
+      '<div class="avatar">'+initials+'</div>'+
+      '<div class="jbody">'+
+        '<div class="jtop"><span class="jtitle">'+title+'</span><span class="jdate">Just now</span></div>'+
+        '<span class="badge '+bc+'">'+type+'</span>'+
+        '<div class="jco">'+company+'</div>'+
+        '<div class="jmeta"><span>📍 '+loc+'</span>'+(pay?'<span>💵 '+pay+'</span>':'')+'</div>'+
+        '<div class="jdesc">'+desc+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="jfoot">'+
+      '<button class="btn-chat" onclick="openChat(this)">'+
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>'+
+        'Chat with Lister'+
+      '</button>'+
+      '<button class="btn-apply">Apply Now</button>'+
+    '</div>';
+  var jobs=document.getElementById('jobs');
+  var slots=jobs.querySelectorAll('.slot-card');
+  if(slots.length>0){jobs.replaceChild(card,slots[0]);}else{jobs.prepend(card);}
+  closePost();
+  ['f-title','f-company','f-pay','f-desc','f-email'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('f-loc').value='';
+  document.getElementById('f-type').value='';
+  document.getElementById('f-cat').value='';
+}
+
+function openChat(btn){
+  var card=btn.closest('.jcard');
+  var company=card.dataset.company||'Lister';
+  var title=card.dataset.title||'Job Listing';
+  var initials=card.dataset.initials||'??';
+  document.getElementById('chat-av').textContent=initials;
+  document.getElementById('chat-name').textContent=company;
+  document.getElementById('chat-job').textContent=title;
+  var msgs=document.getElementById('chat-msgs');
+  msgs.innerHTML='<div class="msg them">Hi there! Thanks for your interest in the <strong>'+title+'</strong> position. Feel free to ask any questions.<div class="msg-time">Just now</div></div>';
+  document.getElementById('chatOverlay').classList.add('open');
+  document.getElementById('chat-input').focus();
+}
+
+function closeChat(){document.getElementById('chatOverlay').classList.remove('open')}
+
+function sendMsg(){
+  var inp=document.getElementById('chat-input');
+  var text=inp.value.trim();
+  if(!text)return;
+  var msgs=document.getElementById('chat-msgs');
+  var m=document.createElement('div');
+  m.className='msg me';
+  m.innerHTML=text+'<div class="msg-time">Just now</div>';
+  msgs.appendChild(m);
+  inp.value='';
+  msgs.scrollTop=msgs.scrollHeight;
+  setTimeout(function(){
+    var replies=['Thanks for reaching out! I'll get back to you shortly.','Great question — let me check on that for you.','Sounds good! Can you tell me a bit more about your experience?','We'd love to connect. When are you available for a quick call?'];
+    var r=document.createElement('div');
+    r.className='msg them';
+    r.innerHTML=replies[Math.floor(Math.random()*replies.length)]+'<div class="msg-time">Just now</div>';
+    msgs.appendChild(r);
+    msgs.scrollTop=msgs.scrollHeight;
+  },900);
+}
+</script>
+</body>
+</html>
